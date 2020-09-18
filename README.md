@@ -76,6 +76,14 @@ content의 darknet OIDv4 Toolkit으로 이동
 ## data 400장 helmet image, 400장 helmet image와 txt
 ```c
 !ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l  
+
 %cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt  
+
 !python process.py
+```
+darknet > data_for_colab > data 에 보면 img와 txt download되어 있습니다  
+
+## dathh에 있는 모든 폴더를 data로 옮기기
+```c
+!cp /content/darknet/data_for_colab/datahh/* /content/darknet/data_for_colab/data
 ```
