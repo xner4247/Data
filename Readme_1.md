@@ -175,6 +175,7 @@ def postprocess(frame, outs,cnt):
     #cv.imwrite(frame_name, frame)
                                                #======================================mycode.........
 ```
+
 ```c
 # 분류하여 저장될 폴더 2개를 명령어로 열어줍니다.
 
