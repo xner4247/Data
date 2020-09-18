@@ -23,5 +23,5 @@
  !pip install -r requirements.txt
  ```
  
- 런타임 다시 실행하라고 하면 다시 실행 후 설치하면 됩니다.
+ 런타임 다시 실행하라고 하면 다시 실행 후 설치하면 됩니다.  
  모든 Requirement already satisfied 된다면 설치된겁니다.
