@@ -91,4 +91,13 @@ darknet > data_for_colab > data 에 보면 img와 txt download되어 있습니�
 ```c
 !ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l
 ```
-1600으로 나오는 이유는 각 폴더에 .jpg .txt 파일이 각각 400개 있고 두가지 카테고리의 항목을 가지고 있으므로 800*2 1600이 된다.
+1600으로 나오는 이유는 각 폴더에 .jpg .txt 파일이 각각 400개 있고 두가지 카테고리의 항목을 가지고 있으므로 800*2 1600이 된다.  
+darknet > data_for_colab 에 보면 train, test img path 저장된 text file 있습니다.
+
+## 1-2. anchors 추출
+# isnan 에러가 뜰경우도 있습니다만
+# anchors6를 삭제해주거나 anchor.py output_dir 마지막 /을 삭제하거나 붙이면 다시 됩니다.
+```c
+%cd /content/darknet/Yolo_Training_GoogleColab/anchors_calculation
+!python anchors.py
+```
