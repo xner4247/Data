@@ -36,5 +36,3 @@ content의 darknet OIDv4 Toolkit으로 이동 후 main.py 실행 (다운로드 �
 %cd /content/darknet/OIDv4_Toolkit_verJam/  
 !python main.py downloader -y --classes 'Human hair' --type_csv train --limit 400 # class id : 0  
 '''
-darknet > OIDv4_Toolkit_verJam에 OID 폴더가 만들어지며 OID 내 CSV 파일 이 위치해 있다.  
-400이 위치 해 있는 자리를 설정해 데이터 개수를 설정 할 수 있다.
