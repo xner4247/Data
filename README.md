@@ -36,3 +36,17 @@ content의 darknet OIDv4 Toolkit으로 이동 후 main.py 실행 (다운로드 �
 %cd /content/darknet/OIDv4_Toolkit_verJam/  
 !python main.py downloader -y --classes 'Human hair' --type_csv train --limit 400 # class id : 0
 ```
+darknet > OIDv4_Toolkit_verJam에 OID 폴더가 만들어지며 OID 내 CSV 파일 이 위치해 있다.  
+limit 400 이 부분은 다운 받을 데이터 개수를 설정하는 곳이다.  
+
+data 폴더 수 확인 400 hair image, 400 hair txt.
+```c
+!ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l
+```
+
+```c
+%cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt
+!python process.py
+```
+Human hair dataset 경로를 train test 분할
+
