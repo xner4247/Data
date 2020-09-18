@@ -72,3 +72,10 @@ content의 darknet OIDv4 Toolkit으로 이동
 
 !python main.py downloader -y --classes 'Helmet' --type_csv train --limit 400 #1
 ```
+
+## data 400장 helmet image, 400장 helmet image와 txt
+```c
+!ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l  
+%cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt  
+!python process.py
+```
