@@ -688,3 +688,71 @@ i, j = (x[:, 5:] > conf_thres).nonzero().t()
 이후 객체를 tracking 하는 sort를 사용하여 중복 객체를 구별할수 있습니다.  
 
 ## Object Tracking
+
+#### 프레임마다 같은 객체를 인지시키기 위해 Deep sort 알고리즘 적용
+### 관련 git clone
+```c
+!git clone https://github.com/theAIGuysCode/yolov3_deepsort.git
+```
+# 필요한 library를 설치합니다.
+```c
+%cd yolov3_deepsort
+!pip install -r requirements-gpu.txt
+```
+```c
+# 우리가 darknet에서 만든 weights를 복사합니다.
+
+#!cp '/content/darknet/yolov3_for_colab/backup/yolov3_custom_1000.weights' /content/yolov3_deepsort/weights 경로 확인 필요
+```
+
+# 경로 확인
+```c
+!pwd
+
+%cd yolov3_deepsort/
+```
+```C
+#yolov3_deepsort> yolov3_tf2 > models.py 에서
+#yolov3 anchor를 변경해야합니다.
+
+data = [0.21,0.29, 0.46,0.67, 0.83,1.19, 1.40,1.56, 1.65,2.38, 2.22,3.64, 3.82,5.77, 3.83,2.77, 7.45,8.66]
+[(data[i],data[i+1]) for i in range(0,len(data),2)]
+```
+
+```C
+#python 기반 tensorflow에서 실행하기 위해서 weughts파일을 tf 파일로 변환
+#기준치 iou와 score 조정 필요
+
+!python load_weights.py --weights '/content/drive/My Drive/YoloProject/backup/yolov3_semifinal_1000.weights' --output /content/yolov3_deepsort/weights/i1_s1.tf --num_classes 2
+#yolov3_deepsort> object_tracker.py  ## i3_s3.weights iou = 0.3 score=0.3
+```
+### 현재 경로 확인
+```c
+!pwd
+```
+
+```c
+# Object Tracking 동영상 실행
+# 착용자 수 미착용자 수 반환
+# object_tracker 수정
+
+# !python object_tracker.py --video /content/yolov3_deepsort/data/video/KakaoTalk_20200915_15582966411111111111111111.mp4 --output ./data/video/h1_i7_s3_0915_pred.avi --weights ./weights/i7_i3.weights --num_classes 2 --classes ./data/labels/coco.names
+
+# !python object_tracker.py --video /content/yolov3_deepsort/data/video/2020_0915_134812_038.MP4 --output ./data/video/ho1_i7_s3_0915_pred.avi --weights ./weights/i7_i3.weights --num_classes 2 --classes ./data/labels/coco.names
+!python object_tracker.py --video '/content/drive/My Drive/YoloProject/moi/2020-09-16_누리네거리01.mp4' --output /content/drive/'My Drive'/YoloProject/result/2020-09-16_누리네거리01_tf_i1_s1_pred.avi --weights ./weights/i1_s1.tf --num_classes 2 --classes ./data/labels/coco.names
+
+# ./data/labels/coco.names 수정
+```
+
+참고 git
+1. 데이터셋 다운로더 - https://github.com/pythonlessons/OIDv4_ToolKit
+2. Yolo 데이터셋 형식 참고 - https://github.com/RajashekarY/OIDv5_ToolKit-YOLOv3
+3. Yolo 모델 - https://github.com/AlexeyAB/darknet
+4. Custom 모델 훈련-https://github.com/rafiuddinkhan/Yolo-Training-GoogleColab
+5. 헬멧 이미지 분류 - https://github.com/BlcaKHat/yolov3-Helmet-Detection
+6. 실시간 객체 인식 - https://github.com/ultralytics/yolov3
+7. 객체 추적 -https://github.com/theAIguysCode/yolov3_deepsort
+문의 및 연락처
+
+이메일 : jaminbread@kakao.com
+핸드폰 : 010-2122-7772
