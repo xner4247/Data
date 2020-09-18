@@ -3,8 +3,7 @@ Data
 Detecting
 
 ### 현재 위치
-
-## !pwd
+!pwd
 
 
 
