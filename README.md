@@ -100,3 +100,14 @@ darknet > data_for_colab 에 보면 train, test img path 저장된 text file 있
 %cd /content/darknet/Yolo_Training_GoogleColab/anchors_calculation
 !python anchors.py
 ```
+## !!!!! 반드시 수정
+### 출력 1번째줄 data_for_colab> .cfg 파일 anchors 수정 
+### -> line 134, 176 anchors 수동으로 재설정 필요!!
+```c
+!cat /content/darknet/data_for_colab/anchors6.txt
+```
+
+## 압축풀기
+```c
+!zip -r /content/darknet.zip /content/darknet
+```
