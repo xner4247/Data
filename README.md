@@ -87,3 +87,8 @@ darknet > data_for_colab > data 에 보면 img와 txt download되어 있습니�
 ```c
 !cp /content/darknet/data_for_colab/datahh/* /content/darknet/data_for_colab/data
 ```
+## data 폴더 수 확인
+```c
+!ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l
+```
+1600으로 나오는 이유는 각 폴더에 .jpg .txt 파일이 각각 400개 있고 두가지 카테고리의 항목을 가지고 있으므로 800*2 1600이 된다.
