@@ -45,7 +45,7 @@ limit 400 이 부분은 다운 받을 데이터 개수를 설정하는 곳이다
 ```
 ## Human hair dataset 경로를 train test 분할
 ```c
-%cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt
+%cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt  
 !python process.py
 ```
 
@@ -57,4 +57,18 @@ limit 400 이 부분은 다운 받을 데이터 개수를 설정하는 곳이다
 ## Helmet dataset을 다운로드위해 data 폴더 생성
 ```c
 !mkdir /content/darknet/data_for_colab/data
+```
+
+
+## OIDv4_Tookit_vetJam>modules>downloader.py 에서 class id = 0 에서 1로 변경
+```c
+!sed -i 's/class_id=0/class_id=1/g' /content/darknet/OIDv4_Toolkit_verJam/modules/downloader.py
+```
+
+## Helmet 데이터 다운로드
+content의 darknet OIDv4 Toolkit으로 이동
+```c
+%cd /content/darknet/OIDv4_Toolkit_verJam/
+
+!python main.py downloader -y --classes 'Helmet' --type_csv train --limit 400 #1
 ```
