@@ -34,5 +34,5 @@ data를 받기 위한 폴더 생성
 content의 darknet OIDv4 Toolkit으로 이동 후 main.py 실행 (다운로드 실행)
 ```c
 %cd /content/darknet/OIDv4_Toolkit_verJam/  
-!python main.py downloader -y --classes 'Human hair' --type_csv train --limit 400 # class id : 0  
+!python main.py downloader -y --classes 'Human hair' --type_csv train --limit 400 # class id : 0
 '''
