@@ -214,7 +214,8 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 ## Darknet git 다운로드
 
 ```c
-#!git clone https://github.com/AlexeyAB/darknet
+%cd /content
+!git clone https://github.com/AlexeyAB/darknet
 ```
 
 
@@ -228,21 +229,85 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 !mkdir /content/darknet/data_for_colab/data/'Human_hair' 
 !mkdir /content/darknet/data_for_colab/data/Helmet
 
-#이 부분은 oid를 이용해 이 코드를 실행 할 사람의 구글 드라이브에 있는 
+#이 부분은 oid를 이용해 이 코드를 실행 할 사람의 구글 드라이브 Oid에 있는 Huma_hair와 helmet .txt, .jpg를 darknet 안에있는 data_for_colab으로 가져오는 코드 입니다.
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.txt /content/darknet/data_for_colab/data/'Human_hair'  
-!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.jpg /content/darknet/data_for_colab/data/'Human_hair'  # 여기까지 재민 이동
+!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.jpg /content/darknet/data_for_colab/data/'Human_hair'  
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.txt /content/darknet/data_for_colab/data/Helmet 
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.jpg /content/darknet/data_for_colab/data/Helmet
 
-#!ls -l /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/Motorcycle | grep ^- | wc -l
-#!ls -l /content/darknet/data_for_colab/data/Helmet | grep ^- | wc -l
-#!ls -l /content/darknet/data_for_colab/data/Human_hair | grep ^- | wc -l
-#!ls -l /content/darknet/data_for_colab/data/Motorcycle | grep ^- | wc -l
+#이 코드는 darknet에 있는 data_for_colab에 파일이 잘 들어가 있는지 개수를 확인하기 위한 코드 입니다. 
+!ls -l /content/darknet/data_for_colab/data/Helmet | grep ^- | wc -l
+!ls -l /content/darknet/data_for_colab/data/Human_hair | grep ^- | wc -l
+```
+
+## Anchor를 계산하고 train, test 나누기 위한 사전작업
+```c
+# 자신의 구글 드라이브에 git 다운 받기 
+
+%cd /content/drive/My Drive
+!git clonehttps://github.com/rafiuddinkhan/Yolo-Training-GoogleColab
+```
+
+### /content/drive/My Drive/Yolo-Training-GoogleColab-master/train_test_conversion 이 부분으로 들어가 process.py에 들어간다.
+
+들어간 후에 이 코드를 복사해 procss.py에 붙여 넣는다.
+```c
+import glob, os
+
+# Current directory
+#current_dir = os.path.dirname(os.path.abspath(__file__))
+
+#print(current_dir)
+
+#current_dir = '/content/darknet/data_for_colab/data'
+current_dir = '/content/darknet/data_for_colab/data/Helmet'
+#current_dir = '/content/darknet/data_for_colab/data/Human_hair'
+
+# Directory where the data will reside, relative to 'darknet.exe'
+#path_data = './NFPAdataset/'
+
+# Percentage of images to be used for the test set
+percentage_test = 10;
+
+# Create and/or truncate train.txt and test.txt
+#file_train = open('/content/darknet/data_for_colab/train.txt', 'w')
+#file_test = open('/content/darknet/data_for_colab/test.txt', 'w')
+
+file_train = open('/content/darknet/data_for_colab/train_1.txt', 'w')
+file_test = open('/content/darknet/data_for_colab/test_1.txt', 'w')
+
+# Populate train.txt and test.txt
+counter = 1
+index_test = round(100 / percentage_test)
+for pathAndFilename in glob.iglob(os.path.join(current_dir, "*.jpg")):
+    title, ext = os.path.splitext(os.path.basename(pathAndFilename))
+
+    if counter == index_test:
+        counter = 1
+        file_test.write(current_dir + "/" + title + '.jpg' + "\n")
+    else:
+        file_train.write(current_dir + "/" + title + '.jpg' + "\n")
+        counter = counter + 1
+```
+## train, text 나누기 이어서
+
+#가장 먼저 위에 설정 대로 한 후에 아래 코드를 실행 시킨다. 그런 후에 
+1. current_dir = '/content/darknet/data_for_colab/data/Helmet' 이부분을 주석 처리해준다.
+2. #current_dir = '/content/darknet/data_for_colab/data/Human_hair' 이부분에 주석을 해제한다.
+3. 다음으로 아래 코드에서 위의 두줄의 코드의 주석을 해제하고 밑에 두 줄의 코드를 주석처리를 해준다.
+#file_train = open('/content/darknet/data_for_colab/train.txt', 'w')
+#file_test = open('/content/darknet/data_for_colab/test.txt', 'w')
+
+file_train = open('/content/darknet/data_for_colab/train_1.txt', 'w')
+file_test = open('/content/darknet/data_for_colab/test_1.txt', 'w')
+4. 그런다음에 아래 코드를 다시 실행 해 준다.
 
 
-
+```c
 !python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/train_test_conversion/process.py
+```
 
+### 
 !python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/anchors_calculation/anchors.py
 
 !rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID/Dataset/train/Helmet'
