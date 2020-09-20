@@ -1,3 +1,7 @@
+#
+현재 코드 상에는 tiny 버전으로 yolo 모델에서 낮은 버전입니다. 성능이 높은 모델을 사용하시려면 코드상에 yolov3-tiny-obj.cfg를 yolov3.cfg 그리고 yolov3-ovj_1000.weights를  
+yolov3_final.weights 변경해주셔야 합니다. 그러기 위해서는 저희가 첨부해드린 파일을 content/darknet/data_for_colab에 앞서 말씀드린 cfg 파일을 넣어주셔야 하는데 바탕화면에 있는 파일을 끌어서 폴더에 드래그해서 넣어주시면 됩니다. 마지막으로 weights 파일은 content/darknet/backup에 넣어주시면 됩니다. 마지막으로 코드를 바꿔야 하는데 ctrl+f 해서 tiny가 적혀져 있는 코드를 수정해 주시면 됩니다. 
+
 
 ## 현재 위치 확인
 ```c
