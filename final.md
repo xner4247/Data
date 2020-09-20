@@ -1,23 +1,28 @@
 ## 드라이브 마운트
+```c
 from google.colab import drive
 drive.mount('/content/drive')
+```
+이 부분에서부터 알고 계셔야 할 부분은 '!' 를 사용하는 코드는 리눅스 기반의 명령어 입니다. 그렇기 때문에 경로 설정을 잘 해줘야 하기 때문에 /My Drive/ 가 들어 가는 부분이 있으면 My Drive 부분에 '' 따옴표를 꼭 붙여주셔야 합니다. 
+
+## 내 드라이브로 경로 들어가기
+
+```c
+%cd /content/drive/My Drive
+```
 
 ## OIDv4 git 다운 받기
-!git clone https://github.com/pythonlessons/OIDv4_ToolKit
-
-
-## OID 이용 데이터가져오기
 ```c
-%cd /content/drive/'My Drive'/OIDv4_ToolKit-master
-````
+!git clone https://github.com/pythonlessons/OIDv4_ToolKit
+```
+
 ### 필요한 패키지 설치
 ```c
 !pip install -r /content/drive/'My Drive'/OIDv4_ToolKit-master/requirements.txt
 ```
 
 ### download.py 설정 변경
-구글 드라이브 마운트를 하고 OID git을 다운받으면  /content/drive/My Drive/OIDv4_ToolKit-master/modules이 경로에 download.py 가 있습니다. 이 부분을 아래 코드를 복사해  
-붙여 넣어 주세요 
+구글 드라이브 마운트를 하고 OID git을 다운받으면  /content/drive/My Drive/OIDv4_ToolKit-master/modules이 경로에 download.py 가 있습니다. 이 부분을 아래 코드를 복사해 붙여 넣어 주세요 
 ```c
 import os
 import cv2
@@ -187,73 +192,47 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
         print(bc.INFO + 'Labels creation completed.' + bc.ENDC)
 ```
 
-## Helmet Data 다운 받기
-아래 코드를 실행 하기 전에 
+## Human hair Data 다운 받기
+코드를 보시면 limit 뒤에 숫자가 있습니다. 이 부분은 다운 받을 데이터 수를 결정하는 것입니다. 
+다 만드신 후에 폴더 이름을 Human_hair 로 만들어 줍니다. 다음에 실행 할 코드의 경로 설정을 위해서 입니다.
+```c
+!python main.py downloader -y --classes 'Human hair' --type_csv train --limit 2500  #### classes = 0
 
-!python main.py downloader -y --classes 'Human hair' --type_csv train --limit 1000  #### classes = 0
+#밑에 코드는 폴더 안에 있는 데이터 개수를 새는 코드 입니다.
+!ls -l /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human hair' | grep ^- | wc -l
+```
+## Helmet Data 다운 받기 
+위에 챕터를 실행 했으면 이 부분에서는 download.py에서의 print(0, x_center, y_center, x_width, y_height, file=f) 이 부분에서 0을 1로 바꿔주시고 실행해주세요 
 
+```c
+!python main.py downloader -y --classes Helmet --type_csv train --limit 2500  #### classes = 1
+
+#밑에 코드는 폴더 안에 있는 데이터 개수를 새는 코드 입니다.
 !ls -l /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet' | grep ^- | wc -l
+```
 
-!python main.py downloader -y --classes Helmet --type_csv train --limit 1000  #### classes = 1
+## Darknet git 다운로드
 
-# 이전 version 가져오기
-
-%cd /content/
-
-!unzip '/content/drive/My Drive/darknet_10.zip'
-
-!cp -r /content/content/darknet /content/
-
-!rm -r /content/content
-
-#!cp -r '/content/drive/My Drive/yolov3_last.weights' /content/darknet/backup
-
-#!cp -r '/content/darknet/backup/yolov3_1000.weights' '/content/drive/My Drive'
-
-# already train
-
-#!ls
-#!rm -fr darknet
+```c
 #!git clone https://github.com/AlexeyAB/darknet
-
-#폴더 옴기기
-#!rm -rf /content/darknet/data_for_colab # 이후 재민이가 다운로드된 txt와 jpg를 다크넷 안 data 폴더에 넣는다
-
-#폴더 만들기
-#!cp -r /content/drive/'My Drive'/data_for_colab /content/darknet
-
-#!mkdir /content/drive/'My Drive'/darknet_2/data_for_colab/data
-#!mkdir /content/drive/'My Drive'/darknet_2/data_for_colab/data/'Human_hair' 
-#!mkdir /content/drive/'My Drive'/darknet_2/data_for_colab/data/Helmet 
+```
 
 
-#!cp -r /content/drive/'My Drive'/darknet_1/test.jpg /content/darknet
-#!cp -r /content/drive/'My Drive'/darknet_1/bike1.mp4 /content/darknet
+## 폴더 만들기
+이 부분은 train을 위해 OID 에서 다운 받아온 파일을 Darknet 폴더로 가져오기 위한 코드 입니다.
 
-
-#OID_Toolkit에 있는 데이터 가져오기
-#!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.txt /content/drive/'My Drive'/darknet_2/data_for_colab/data/'Human_hair'  
-#!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.jpg /content/drive/'My Drive'/darknet_2/data_for_colab/data/'Human_hair'  # 여기까지 재민 이동
-#!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.txt /content/drive/'My Drive'/darknet_2/data_for_colab/data/Helmet 
-#!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.jpg /content/drive/'My Drive'/darknet_2/data_for_colab/data/Helmet
-
-#!rm -rf /content/drive/'My Drive'/darknet_2/
-
-#!cp -r /content/drive/'My Drive'/data_for_colab /content/darknet/data_for_colab 
-
+```c
+#먼저 mkdir을 이용해 darknet 안에 data for colab을 만들고 그 하위 폴더에 data 그 안에 human_hair와 helmet을 만들어 줍니다.
+!mkdir /content/darknet/data_for_colab/  
 !mkdir /content/darknet/data_for_colab/data
 !mkdir /content/darknet/data_for_colab/data/'Human_hair' 
 !mkdir /content/darknet/data_for_colab/data/Helmet
-#!mkdir /content/darknet/data_for_colab/data/Motorcycle  
 
+#이 부분은 oid를 이용해 이 코드를 실행 할 사람의 구글 드라이브에 있는 
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.txt /content/darknet/data_for_colab/data/'Human_hair'  
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.jpg /content/darknet/data_for_colab/data/'Human_hair'  # 여기까지 재민 이동
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.txt /content/darknet/data_for_colab/data/Helmet 
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.jpg /content/darknet/data_for_colab/data/Helmet
-#!cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Motorcycle'/*.txt /content/darknet/data_for_colab/data/Motorcycle 
-!#cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Motorcycle'/*.jpg /content/darknet/data_for_colab/data/Motorcycle
-
-!cp -r /content/darknet/cfg/yolov3.cfg /content/darknet/data_for_colab
 
 #!ls -l /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/Motorcycle | grep ^- | wc -l
 #!ls -l /content/darknet/data_for_colab/data/Helmet | grep ^- | wc -l
@@ -268,6 +247,7 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 
 !rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID/Dataset/train/Helmet'
 !rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID/Dataset/train/Human_hair'
+```
 
 # train of install
 
@@ -545,3 +525,21 @@ data = [0.29,0.37, 0.67,0.81, 1.05,1.60, 1.84,2.00, 2.11,3.35, 3.00,5.71, 4.79,3
 
 !rm -r /content/darknet
 
+
+
+# 이전 version 가져와 편하게 할 수 있는 코드를 보여드리겠습니다.
+```c
+#밑에 코드는 경로를 설정해 주는 코드 입니다.
+
+%cd /content/
+
+!unzip '/content/drive/My Drive/darknet_10.zip'
+
+!cp -r /content/content/darknet /content/
+
+!rm -r /content/content
+
+#!cp -r '/content/drive/My Drive/yolov3_last.weights' /content/darknet/backup
+
+#!cp -r '/content/darknet/backup/yolov3_1000.weights' '/content/drive/My Drive'
+```
