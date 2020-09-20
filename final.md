@@ -195,6 +195,7 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 ## Human hair Data 다운 받기
 코드를 보시면 limit 뒤에 숫자가 있습니다. 이 부분은 다운 받을 데이터 수를 결정하는 것입니다. 
 다 만드신 후에 폴더 이름을 Human_hair 로 만들어 줍니다. 다음에 실행 할 코드의 경로 설정을 위해서 입니다.
+
 ```c
 !python main.py downloader -y --classes 'Human hair' --type_csv train --limit 2500  #### classes = 0
 
@@ -224,16 +225,19 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 
 ```c
 #먼저 mkdir을 이용해 darknet 안에 data for colab을 만들고 그 하위 폴더에 data 그 안에 human_hair와 helmet을 만들어 줍니다.
+
 !mkdir /content/darknet/data_for_colab/  
 !mkdir /content/darknet/data_for_colab/data
 !mkdir /content/darknet/data_for_colab/data/'Human_hair' 
 !mkdir /content/darknet/data_for_colab/data/Helmet
 
 #이 부분은 oid를 이용해 이 코드를 실행 할 사람의 구글 드라이브 Oid에 있는 Huma_hair와 helmet .txt, .jpg를 darknet 안에있는 data_for_colab으로 가져오는 코드 입니다.
+
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.txt /content/darknet/data_for_colab/data/'Human_hair'  
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Human_hair'/*.jpg /content/darknet/data_for_colab/data/'Human_hair'  
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.txt /content/darknet/data_for_colab/data/Helmet 
 !cp /content/drive/'My Drive'/OIDv4_ToolKit-master/OID/Dataset/train/'Helmet'/*.jpg /content/darknet/data_for_colab/data/Helmet
+
 
 #이 코드는 darknet에 있는 data_for_colab에 파일이 잘 들어가 있는지 개수를 확인하기 위한 코드 입니다. 
 !ls -l /content/darknet/data_for_colab/data/Helmet | grep ^- | wc -l
