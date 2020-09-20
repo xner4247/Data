@@ -196,7 +196,7 @@ def get_label(folder, dataset_dir, class_name, class_code, df_val, class_list, a
 
 ## Human hair Data 다운 받기
 코드를 보시면 limit 뒤에 숫자가 있습니다. 이 부분은 다운 받을 데이터 수를 결정하는 것입니다. 
-다 만드신 후에 폴더 이름을 Human_hair 로 만들어 줍니다. 다음에 실행 할 코드의 경로 설정을 위해서 입니다.
+다 만드신 후에 폴더 이름을 Human_hair 로 만들어 줍니다. 다음에 실행 할 코드의 경로 설정을 위해서 입니다. 나중에 빠른 실행을 위해 사진은 모두 다운 받아주세요
 
 ```c
 !python main.py downloader -y --classes 'Human hair' --type_csv train --limit 2500  #### classes = 0
@@ -1408,16 +1408,10 @@ def download(path):
   files.download(path)
 ```
 
-## 같이 첨부한 finaltest를 google drive에 넣어 줍니다
-아래 코드를 실행해 줍니다.
-```c
-%cd /content/
-!mkdir /content/finaltest
-!unzip '/content/drive/My Drive/finaltest.zip'
-#!cp -r /content/content/finaltest /content/
-!cp -r /content/finaltest/darknet53.conv.74 /content/darknet/data_for_colab/
-!cp -r /contetn/finaltest/yolov3_final.weights /content/darknet/data_for_colab/ 
-```
+## 같이 첨부한 finaltest 압축 해제
+1. yolov3_final.weights darknet53.conv.74 이 파일은 dakrnet/data_for_colab 에 넣어주시고
+2. yolov3_final.weights은 darknet/backup에 넣어줍니다
+
 
 
 
@@ -1425,33 +1419,26 @@ def download(path):
 ```c
 #!./darknet detector train data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/data_for_colab/darknet53.conv.74 -dont_show 
 ```
-
-!./darknet detector train data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/backup/yolov3_last.weights -dont_show 
-
-!zip /content/darknet
-
+```c
 !cp -r /content/drive/'My Drive'/test_2.jpg /content/darknet
+```
 
+```c
 %cd /content/darknet
 !./darknet detector test /content/darknet/data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/backup/yolov3_4000.weights /content/darknet/test_3.jpg -dont-show -thresh 0.3
-
+```
+```
 imShow('predictions.jpg')
-
-!zip -r /content/drive/'My Drive'/darknet_10.zip /content/darknet
-
-#!rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID'
-
-!cp -r /content/drive/'My Drive'/videoby.mp4 /content/darknet
-
+```
+```c
 %cd /content/darknet
 !./darknet detector demo data_for_colab/obj.data data_for_colab/yolov3.cfg backup/yolov3_last.weights  -dont_show '/content/drive/My Drive/누리진짜2_1_0.75배속.mp4' -i 0 -out_filename riding.avi -thresh 0.3
-
+```
+```c
 download('riding.avi') 
+```
 
-!cp -r /content/darknet /content/drive/'My Drive'
-
-#!./darknet detector calc_anchors Dataset/obj.data -num_of_clusters 5 -width 416 -height 416
-
+```c
 from IPython.display import display, Javascript
 from google.colab.output import eval_js
 from base64 import b64decode
@@ -1494,7 +1481,9 @@ def take_photo(filename='photo.jpg', quality=0.8):
   with open(filename, 'wb') as f:
     f.write(binary)
   return filename
+```
 
+```c
 %cd /content/darknet
 import os
 from IPython.display import Image
@@ -1513,107 +1502,5 @@ except Exception as err:
   # Errors will be thrown if the user does not have a webcam or if they do not
   # grant the page permission to access it.
   print(str(err))
-
-#!zip -r /content/drive/'My Drive'/tracking.zip /content/TensorFlow-2.x-YOLOv3
-#%cd /content
-!unzip /content/drive/'My Drive'/tracking.zip
-
-Looks like this, it will click the screen every 10 minutes so that you don't get kicked off for being idle! HACKS!
-
-%cd /content/darknet
-
-%cp -r /content/darknet/cfg/yolov4.cfg /content/darknet/data_for_colab
-
-# train your custom detector! (uncomment %%capture below if you run into memory issues or your Colab is crashing)
-# %%capture
-!./darknet detector train data_for_colab/obj.data data_for_colab/yolov4.cfg data_for_colab/yolov4.conv.137 -dont_show
-
-After training, you can observe a chart of how your model did throughout the training process by running the below command. It shows a chart of your average loss vs. iterations. For your model to be 'accurate' you should aim for a loss under 2.
-
-!python3 -c "from utils import utils; utils.plot_results()"
-
-# show chart.png of how custom object detector did with training
-imShow('chart.png')
-
-Here is what the chart.png should look like after an uninterrupted training! If you stop training or it crashes during training your chart will look like the above one but don't worry you can still check accuracy of your model in the next steps.
-
-
-**TRICK**: If for some reason you get an error or your Colab goes idle during training, you have not lost your partially trained model and weights! Every 100 iterations a weights file called **yolov4-obj_last.weights** is saved to **mydrive/yolov4/backup/** folder (wherever your backup folder is). This is why we created this folder in our Google drive and not on the cloud VM. If your runtime crashes and your backup folder was in your cloud VM you would lose your weights and your training progress.
-
-We can kick off training from our last saved weights file so that we don't have to restart! WOOHOO! Just run the following command but with your backup location.
-```
-!./darknet detector train data/obj.data cfg/yolov4-obj.cfg /mydrive/yolov4/backup/yolov4-obj_last.weights -dont_show
 ```
 
-# kick off training from where it last saved
-!./darknet detector train data/obj.data cfg/yolov4-obj.cfg /mydrive/yolov4/backup/yolov4-obj_last.weights -dont_show
-
-# Step 6: Checking the Mean Average Precision (mAP) of Your Model
-If you didn't run the training with the '-map- flag added then you can still find out the mAP of your model after training. Run the following command on any of the saved weights from the training to see the mAP value for that specific weight's file. I would suggest to run it on multiple of the saved weights to compare and find the weights with the highest mAP as that is the most accurate one!
-
-**NOTE:** If you think your final weights file has overfitted then it is important to run these mAP commands to see if one of the previously saved weights is a more accurate model for your classes.
-
-%cp -r /content/drive/'My Drive'/yolov3_semifinal_1000.weights /content/darknet/backup
-
-%cp -r /content/drive/'My Drive'/yolov3.cfg /content/darknet/data_for_colab
-
-%cd /content/darknet
-
-!./darknet detector map data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/backup/yolov3_semifinal_1000.weights -show
-
-!./darknet detector map /content/darknet/data_for_colab/obj.data /content/darknet/data_for_colab/yolov3.cfg /content/darknet/backup/yolov3_4000.weights -map
-
-%cd /content
-
-!git clone https://github.com/theAIGuysCode/yolov3_deepsort.git
-
-%cd /content/yolov3_deepsort
-!pip install -r requirements-gpu.txt
-
-!cp '/content/darknet/backup/yolov3_final.weights' /content/yolov3_deepsort/weights
-
-!pwd
-
-%cd yolov3_deepsort/
-
-data = [0.29,0.37, 0.67,0.81, 1.05,1.60, 1.84,2.00, 2.11,3.35, 3.00,5.71, 4.79,3.15, 5.46,7.49, 9.94,9.71]
-[(data[i],data[i+1]) for i in range(0,len(data),2)]
-#yolov3_deepsort> yolov3_tf2 > models.py
-
-
-!python load_weights.py --weights '/content/yolov3_deepsort/weights/yolov3_final.weights' --output /content/yolov3_deepsort/weights/i3_s3.tf --num_classes 2
-#yolov3_deepsort> object_tracker.py  ## i3_s3.weights iou = 0.3 score=0.3
-
-# !python object_tracker.py --video /content/yolov3_deepsort/data/video/KakaoTalk_20200915_15582966411111111111111111.mp4 --output ./data/video/h1_i7_s3_0915_pred.avi --weights ./weights/i7_i3.weights --num_classes 2 --classes ./data/labels/coco.names
-
-# !python object_tracker.py --video /content/yolov3_deepsort/data/video/2020_0915_134812_038.MP4 --output ./data/video/ho1_i7_s3_0915_pred.avi --weights ./weights/i7_i3.weights --num_classes 2 --classes ./data/labels/coco.names
-!python object_tracker.py --video '/content/drive/My Drive/누리진짜2_1_0.75배속.mp4' --output /content/drive/'My Drive'/test_3_pred.avi --weights ./weights/i3_s3.tf --num_classes 2 --classes ./data/labels/coco.names
-
-# ./data/labels/coco.names 수정
-
-%cd /content/
-
-!wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1kCpwsWlTjRmeaeqgOoZcgHypvzhQbIpL' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1kCpwsWlTjRmeaeqgOoZcgHypvzhQbIpL" -O tesst2222222222.zip && rm -rf /tmp/cookies.txt
-
-!git clone https://github.com/cyberjam/darknet.git '/content/darknet'
-
-!rm -r /content/darknet
-
-
-
-# 이전 version 가져와 편하게 할 수 있는 코드를 보여드리겠습니다.
-```c
-#밑에 코드는 경로를 설정해 주는 코드 입니다.
-
-%cd /content/
-
-!unzip '/content/drive/My Drive/darknet_10.zip'
-
-!cp -r /content/content/darknet /content/
-
-!rm -r /content/content
-
-#!cp -r '/content/drive/My Drive/yolov3_last.weights' /content/darknet/backup
-
-#!cp -r '/content/darknet/backup/yolov3_1000.weights' '/content/drive/My Drive'
-```
