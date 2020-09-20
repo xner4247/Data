@@ -294,22 +294,26 @@ for pathAndFilename in glob.iglob(os.path.join(current_dir, "*.jpg")):
         counter = counter + 1
 ```
 ## train, text 나누기 이어서
-
-#가장 먼저 위에 설정 대로 한 후에 아래 코드를 실행 시킨다. 그런 후에 
+이 코드를 먼저 실행한다.
+```c
+!python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/train_test_conversion/process.py
+```
+다음으로
 1. current_dir = '/content/darknet/data_for_colab/data/Helmet' 이부분을 주석 처리해준다.  
 2. #current_dir = '/content/darknet/data_for_colab/data/Human_hair' 이부분에 주석을 해제한다.  
 3. 다음으로 아래 코드에서 위의 두줄의 코드의 주석을 해제하고 밑에 두 줄의 코드를 주석처리를 해준다.  
+
 #file_train = open('/content/darknet/data_for_colab/train.txt', 'w')  
 #file_test = open('/content/darknet/data_for_colab/test.txt', 'w')  
 
 file_train = open('/content/darknet/data_for_colab/train_1.txt', 'w')  
 file_test = open('/content/darknet/data_for_colab/test_1.txt', 'w')  
-4. 그런다음에 아래 코드를 다시 실행 해 준다.  
-
+4. 그런다음에 아래 코드를 다시 실행한다.
 
 ```c
 !python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/train_test_conversion/process.py
 ```
+
 
 ### 
 !python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/anchors_calculation/anchors.py
