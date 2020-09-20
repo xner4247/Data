@@ -16,7 +16,7 @@ drive.mount('/content/drive')
 ```
 
 ### download.py 설정 변경
-구글 드라이브 마운트를 하고 OID git을 다운받으면  /content/drive/My Drive/OIDv4_ToolKit-master/modules이 경로에 download.py 가 있습니다. 이 부분을 아래 코드를 복사해    
+구글 드라이브 마운트를 하고 OID git을 다운받으면  /content/drive/My Drive/OIDv4_ToolKit-master/modules이 경로에 download.py 가 있습니다. 이 부분을 아래 코드를 복사해  
 붙여 넣어 주세요 
 ```c
 import os
