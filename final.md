@@ -1,3 +1,5 @@
+## 마운트를 하기전에 코랩 파일을 여시고 다른거 건들지 마시고 런타임에 런타임 유형 변경 GPU로 해주세요 이것을 안하고 돌리시다가 GPU 오류 뜨면 처음부터 다시하셔야 합니다 ^^
+
 ## 드라이브 마운트
 ```c
 from google.colab import drive
@@ -313,19 +315,995 @@ file_test = open('/content/darknet/data_for_colab/test_1.txt', 'w')
 ```c
 !python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/train_test_conversion/process.py
 ```
+5. 그 다음 /content/darknet/data_for_colab에 생긴 test_1.txt 안에 있는 내용을 모두 복사해 test.txt에 붙여넣고 저장해준다.  
+train_1.txt 안에 있는 내용도 train.txt 안에 복사해 넣어주고 저장한다.
 
 
-### 
-!python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/anchors_calculation/anchors.py
+### Anchor 계산
 
-!rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID/Dataset/train/Helmet'
-!rm -r '/content/drive/My Drive/OIDv4_ToolKit-master/OID/Dataset/train/Human_hair'
+/content/drive/My Drive/Yolo-Training-GoogleColab-master/anchors_calculation 이부분에 들어가 아래 코드를 복사해 붙여넣어준다.
+```c
+from os import listdir
+from os.path import isfile, join
+import argparse
+#import cv2
+import numpy as np
+import sys
+import os
+import shutil
+import random
+import math
+
+width_in_cfg_file = 416.
+height_in_cfg_file = 416.
+
+def IOU(x,centroids):
+    similarities = []
+    k = len(centroids)
+    for centroid in centroids:
+        c_w,c_h = centroid
+        w,h = x
+        if c_w>=w and c_h>=h:
+            similarity = w*h/(c_w*c_h)
+        elif c_w>=w and c_h<=h:
+            similarity = w*c_h/(w*h + (c_w-w)*c_h)
+        elif c_w<=w and c_h>=h:
+            similarity = c_w*h/(w*h + c_w*(c_h-h))
+        else: #means both w,h are bigger than c_w and c_h respectively
+            similarity = (c_w*c_h)/(w*h)
+        similarities.append(similarity) # will become (k,) shape
+    return np.array(similarities)
+
+def avg_IOU(X,centroids):
+    n,d = X.shape
+    sum = 0.
+    for i in range(X.shape[0]):
+        #note IOU() will return array which contains IoU for each centroid and X[i] // slightly ineffective, but I am too lazy
+        sum+= max(IOU(X[i],centroids))
+    return sum/n
+
+def write_anchors_to_file(centroids,X,anchor_file):
+    f = open(anchor_file,'w')
+
+    anchors = centroids.copy()
+    print(anchors.shape)
+
+    for i in range(anchors.shape[0]):
+        anchors[i][0]*=width_in_cfg_file/32.
+        anchors[i][1]*=height_in_cfg_file/32.
+
+
+    widths = anchors[:,0]
+    sorted_indices = np.argsort(widths)
+
+    print('Anchors = ', anchors[sorted_indices])
+
+    for i in sorted_indices[:-1]:
+        f.write('%0.2f,%0.2f, '%(anchors[i,0],anchors[i,1]))
+
+    #there should not be comma after last anchor, that's why
+    f.write('%0.2f,%0.2f\n'%(anchors[sorted_indices[-1:],0],anchors[sorted_indices[-1:],1]))
+
+    f.write('%f\n'%(avg_IOU(X,centroids)))
+    print()
+
+def kmeans(X,centroids,eps,anchor_file):
+
+    N = X.shape[0]
+    iterations = 0
+    k,dim = centroids.shape
+    prev_assignments = np.ones(N)*(-1)
+    iter = 0
+    old_D = np.zeros((N,k))
+
+    while True:
+        D = []
+        iter+=1
+        for i in range(N):
+            d = 1 - IOU(X[i],centroids)
+            D.append(d)
+        D = np.array(D) # D.shape = (N,k)
+
+        print("iter {}: dists = {}".format(iter,np.sum(np.abs(old_D-D))))
+
+        #assign samples to centroids
+        assignments = np.argmin(D,axis=1)
+
+        if (assignments == prev_assignments).all() :
+            print("Centroids = ",centroids)
+            write_anchors_to_file(centroids,X,anchor_file)
+            return
+
+        #calculate new centroids
+        centroid_sums=np.zeros((k,dim),np.float)
+        for i in range(N):
+            centroid_sums[assignments[i]]+=X[i]
+        for j in range(k):
+            centroids[j] = centroid_sums[j]/(np.sum(assignments==j))
+
+        prev_assignments = assignments.copy()
+        old_D = D.copy()
+
+def main(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-filelist', default = '/content/darknet/data_for_colab/train.txt',
+                        help='path to filelist\n' )
+    parser.add_argument('-output_dir', default = '/content/drive/My Drive/Yolo-Training-GoogleColab-master/anchors_calculation/anchors', type = str,
+                        help='Output anchor directory\n' )
+    parser.add_argument('-num_clusters', default = 9, type = int,
+                        help='number of clusters\n' )
+
+
+    args = parser.parse_args()
+
+    if not os.path.exists(args.output_dir):
+        os.mkdir(args.output_dir)
+
+    f = open(args.filelist)
+
+    lines = [line.rstrip('\n') for line in f.readlines()]
+
+    annotation_dims = []
+
+    size = np.zeros((1,1,3))
+    for line in lines:
+
+        #line = line.replace('images','labels')
+        #line = line.replace('img1','labels')
+        line = line.replace('JPEGImages','labels')
+
+
+        line = line.replace('.jpg','.txt')
+        line = line.replace('.jpeg','.txt')
+        line = line.replace('.jpg','.txt')
+        print(line)
+        f2 = open(line)
+        for line in f2.readlines():
+            line = line.rstrip('\n')
+            w,h = line.split(' ')[3:]
+            #print(w,h)
+            annotation_dims.append(tuple(map(float,(w,h))))
+    annotation_dims = np.array(annotation_dims)
+
+    eps = 0.005
+
+    if args.num_clusters == 0:
+        for num_clusters in range(1,11): #we make 1 through 10 clusters
+            anchor_file = join( args.output_dir,'anchors%d.txt'%(num_clusters))
+
+            indices = [ random.randrange(annotation_dims.shape[0]) for i in range(num_clusters)]
+            centroids = annotation_dims[indices]
+            kmeans(annotation_dims,centroids,eps,anchor_file)
+            print('centroids.shape', centroids.shape)
+    else:
+        anchor_file = join( args.output_dir,'anchors%d.txt'%(args.num_clusters))
+        indices = [ random.randrange(annotation_dims.shape[0]) for i in range(args.num_clusters)]
+        centroids = annotation_dims[indices]
+        kmeans(annotation_dims,centroids,eps,anchor_file)
+        print('centroids.shape', centroids.shape)
+
+if __name__=="__main__":
+    main(sys.argv)
 ```
 
-# train of install
+위 단계를 하셨으면 밑에 코드를 실행 시키면 됩니다.
 
+```c
+!python /content/drive/'My Drive'/Yolo-Training-GoogleColab-master/anchors_calculation/anchors.py
+```
+실행시킨 후  /content/drive/My Drive/Yolo-Training-GoogleColab-master/anchors_calculation/anchors 이 경로에 들어가면 
+anchor9.txt 파일이 있는데 맨 윗줄을 다 복사해서 가지고 있어야 합니다. 
+
+### cfg 파일 옮기기 
+darknet 안에 있는 cfg 파일을 darknet data_for_colab으로 옮기는 것입니다.
+```c
+!cp -r /content/darknet/cfg/yolov3.cfg /content/darknet/data_for_colab
+```
+
+### cfg 설정
+
+옮겨진 cfg 파일에 들어가 아래 코드를 그대로 복사붙여넣기 한 후 위에 anchor 계산 값을 cfg 안에 anchor에 다 복사 붙여넣기 해줍니다.
+총 3개가 있고 3 군데에 다 넣어주셔야 합니다.
+
+```c
+[net]
+# Testing
+batch=64
+subdivisions=16
+# Training
+# batch=64
+# subdivisions=16
+width=416
+height=416
+channels=3
+momentum=0.9
+decay=0.0005
+angle=0
+saturation = 1.5
+exposure = 1.5
+hue=.1
+flip=0
+learning_rate=0.001
+burn_in=1000
+max_batches = 4000
+policy=steps
+steps=3200,3600
+scales=.1,.1
+
+[convolutional]
+batch_normalize=1
+filters=32
+size=3
+stride=1
+pad=1
+activation=leaky
+
+# Downsample
+
+[convolutional]
+batch_normalize=1
+filters=64
+size=3
+stride=2
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=32
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=64
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+# Downsample
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=3
+stride=2
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=64
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=64
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+# Downsample
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=2
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+# Downsample
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=2
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+# Downsample
+
+[convolutional]
+batch_normalize=1
+filters=1024
+size=3
+stride=2
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=1024
+size=3
+stride=1
+pad=1
+activation=leaky
+
+[shortcut]
+from=-3
+activation=linear
+
+######################
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=512
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=1024
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=21
+activation=linear
+
+
+[yolo]
+mask = 6,7,8
+
+anchors = 
+classes=2
+num=9
+jitter=.3
+ignore_thresh = .7
+truth_thresh = 1
+random=1
+
+
+[route]
+layers = -4
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[upsample]
+stride=2
+
+[route]
+layers = -1, 61
+
+
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=256
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=512
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=21
+activation=linear
+
+
+[yolo]
+mask = 3,4,5
+anchors = 
+classes=2
+num=9
+jitter=.3
+ignore_thresh = .7
+truth_thresh = 1
+random=1
+
+
+
+[route]
+layers = -4
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[upsample]
+stride=2
+
+[route]
+layers = -1, 36
+
+
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+filters=128
+size=1
+stride=1
+pad=1
+activation=leaky
+
+[convolutional]
+batch_normalize=1
+size=3
+stride=1
+pad=1
+filters=256
+activation=leaky
+
+[convolutional]
+size=1
+stride=1
+pad=1
+filters=21
+activation=linear
+
+
+[yolo]
+mask = 0,1,2
+anchors = 
+classes=2
+num=9
+jitter=.3
+ignore_thresh = .7
+truth_thresh = 1
+random=1
+```
+
+
+
+## 여기서 부터는 darknet에서 train을 하기 위한 코드 입니다. 그냥 실행 하시면 됩니다.
+```c
 %cd /content/darknet/
-
+```
+```c
 !apt-get update
 !apt-get upgrade
 !apt-get install build-essential
@@ -349,7 +1327,9 @@ print('Yeh-Ap!')
 !sed -i 's/GPU=0/GPU=1/g' Makefile
 print('Yeh-Ap!')
 !ls
+```
 
+```c
 !apt install g++-5
 !apt install gcc-5
 
@@ -361,7 +1341,9 @@ print('Yeh-Ap!')
 !update-alternatives --set cc /usr/bin/gcc
 !update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
 !update-alternatives --set c++ /usr/bin/g++
+```
 
+```c
 #Now, here's a bunch of code that takes the longest to execute here but
 #It's about installing CUDA and using the beautiful Tesla K80 GPU, so that
 #Will worth it
@@ -378,7 +1360,8 @@ print('Yeh-Ap!')
 !apt update
 !apt upgrade
 !apt install cuda-8.0 -y
-
+```
+```c
 #Now let's see whether the GPU is here and CUDA was successfully installed!
 import tensorflow as tf
 device_name = tf.test.gpu_device_name()
@@ -387,10 +1370,13 @@ print(device_name)
 print("'sup!'")
 
 !/usr/local/cuda/bin/nvcc --version
-
+```
+```c
 %cd /content/darknet
 !make
+```
 
+```c
 #Let's define some functions that will let us show images, and upload and 
 #download files
 def imShow(path):
@@ -420,10 +1406,25 @@ def upload():
 def download(path):
   from google.colab import files
   files.download(path)
+```
 
-#!ls #classes=1 2로 변환
+## 같이 첨부한 finaltest를 google drive에 넣어 줍니다
+아래 코드를 실행해 줍니다.
+```c
+%cd /content/
+!mkdir /content/finaltest
+!unzip '/content/drive/My Drive/finaltest.zip'
+#!cp -r /content/content/finaltest /content/
+!cp -r /content/finaltest/darknet53.conv.74 /content/darknet/data_for_colab/
+!cp -r /contetn/finaltest/yolov3_final.weights /content/darknet/data_for_colab/ 
+```
+
+
+
+## train 하는 코드 입니다. 그냥 실행 하시면 됩니다.
+```c
 #!./darknet detector train data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/data_for_colab/darknet53.conv.74 -dont_show 
-
+```
 
 !./darknet detector train data_for_colab/obj.data data_for_colab/yolov3.cfg /content/darknet/backup/yolov3_last.weights -dont_show 
 
