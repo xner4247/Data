@@ -1,6 +1,17 @@
 #
-현재 코드 상에는 tiny 버전으로 yolo 모델에서 낮은 버전입니다. 성능이 높은 모델을 사용하시려면 코드상에 yolov3-tiny-obj.cfg를 yolov3.cfg 그리고 yolov3-ovj_1000.weights를  
-yolov3_final.weights 변경해주셔야 합니다. 그러기 위해서는 저희가 첨부해드린 파일을 content/darknet/data_for_colab에 앞서 말씀드린 cfg 파일을 넣어주셔야 하는데 바탕화면에 있는 파일을 끌어서 폴더에 드래그해서 넣어주시면 됩니다. 마지막으로 weights 파일은 content/darknet/backup에 넣어주시면 됩니다. 마지막으로 코드를 바꿔야 하는데 ctrl+f 해서 tiny가 적혀져 있는 코드를 수정해 주시면 됩니다. 
+- 언어 버전
+python 3.6.9
+
+-더 좋은 성능을 보고 싶어 하시는 분들을 위한 선택 사항
+1. content/darknet/data_for_colab/yolov3-tiny-obj.cfg -> content/darknet/data_for_colab/yolov3.cfg
+2. content/darknet/data_for_colab/backup/yolov3-obj_1000.weights 또는 content/darknet/data_for_colab/backup/yolov3_1000.weights ->    content/darknet/data_for_colab/backup/yolov3_final.weights
+3. content/darknet/data_for_colab/yolov3-tiny.conv.15 -> content/darknet/data_for_colab/darknet53.conv.74
+
+-예제 파일 사용 방법
+1. /content/darknet/data/helmetNonhelmet.jpg -> /content/darknet/data/image_detect_ex
+2. /content/darknet/data/2020-09-01_Untitled.mp4' -> /content/darknet/data/movie_detect_ex'
+
+
 
 
 ## 현재 위치 확인
@@ -35,7 +46,7 @@ data를 받기 위한 폴더 생성
 ```c
 !mkdir /content/darknet/data_for_colab/data/
 ```
-content의 darknet OIDv4 Toolkit으로 이동 후 main.py 실행 (다운로드 실행)
+content의 darknet OIDv4 Toolkit으로 이동 후 main.py 실행 (사진을 다운로드 하기 위해 실행하는 파일입니다.)
 ```c
 %cd /content/darknet/OIDv4_Toolkit_verJam/  
 !python main.py downloader -y --classes 'Human hair' --type_csv train --limit 400 # class id : 0
@@ -48,6 +59,7 @@ limit 400 이 부분은 다운 받을 데이터 개수를 설정하는 곳이다
 !ls -l /content/darknet/data_for_colab/data | grep ^- | wc -l
 ```
 ## Human hair dataset 경로를 train test 분할
+prcess.py는 다운 받으신 dataset에서 train, test로 분할해주는 파일 입니다.
 ```c
 %cd /content/darknet/Yolo_Training_GoogleColab/train_test_path_txt  
 !python process.py
@@ -100,6 +112,7 @@ darknet > data_for_colab 에 보면 train, test img path 저장된 text file 있
 
 ## 1-2. anchors 추출
 ### isnan 에러가 뜰경우도 있습니다만 anchors6를 삭제해주거나 anchor.py output_dir 마지막 /을 삭제하거나 붙이면 다시 됩니다.
+anchors.py는 다운 받으신 dataset에서 anchors를 계산해 주는 파일입니다.
 ```c
 %cd /content/darknet/Yolo_Training_GoogleColab/anchors_calculation
 !python anchors.py
