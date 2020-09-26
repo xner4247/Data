@@ -728,16 +728,40 @@ i, j = (x[:, 5:] > conf_thres).nonzero().t()
 
 %cd yolov3_deepsort/
 ```
+
+```c
+#class 이름을 우리 클래스로 설정해줘야합니다.
+# /content/darknet/yolov3_deepsort/data/labels/coco.names에서 모두 삭제
+# 0번째줄에 Danger, 1번째 줄에 Safe를 입력합니다.
+
+```
+
 ```C
 #yolov3_deepsort> yolov3_tf2 > models.py 에서
 #yolov3 anchor를 변경해야합니다.
 
 data = [0.21,0.29, 0.46,0.67, 0.83,1.19, 1.40,1.56, 1.65,2.38, 2.22,3.64, 3.82,5.77, 3.83,2.77, 7.45,8.66]
 [(data[i],data[i+1]) for i in range(0,len(data),2)]
+# 해당 코드는 data에 앵커를 넣으면 필요한 형식으로 출력해줍니다.
+# 복사하셔서 수정하시면 됩니다.
+
+# models.py에서 tracking 임계치를 조정할수 있습니다.
+# iou 및 score 를 낮추면 실제 디텍팅된 객체들을 최대한 보여주고, 
+# 높인다면 해당 설정한 값 이상인 객체만 출력됩니다.
+#27번째줄 flags.DEFINE_float('yolo_iou_threshold', 0.5, 'iou threshold')
+#28번쨰줄 flags.DEFINE_float('yolo_score_threshold', 0.5, 'score threshold')
+
 ```
 
 ```C
-#python 기반 tensorflow에서 실행하기 위해서 weughts파일을 tf 파일로 변환
+#yolov3_deepsort > object_tracker.py
+# colab은 Xserver 이슈가 있습니다. 따라서 해당 부분을 주석처리해줘야합니다.
+#141번째줄 cv2.imshow('output', img) 을 주석처리합니다.
+
+```
+
+```C
+#python 기반 tensorflow에서 실행하기 위해서 weights파일을 tf 파일로 변환
 #기준치 iou와 score 조정 필요
 
 !python load_weights.py --weights '/content/drive/My Drive/YoloProject/backup/yolov3_semifinal_1000.weights' --output /content/yolov3_deepsort/weights/i1_s1.tf --num_classes 2
