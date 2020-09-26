@@ -25,7 +25,7 @@ inpHeight = 416      #Height of network's input image
 
 
 # https://drive.google.com/file/d/1gh6knzmRZz-EH5qKPAtCDQDr4qamOhsL/view?usp=sharing
-# weights 파일을 같은 폴더에 다운 받아 주세요
+# weights 파일을 같은 폴더에 다운 받아 주세요. 여기서 같은 파일이라고 하면 jupyter notebook이 있는 폴더 입니다!!!!!!!
 
 ```c
 # Load names of classes
