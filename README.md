@@ -8,8 +8,8 @@ python 3.6.9
 3. content/darknet/data_for_colab/yolov3-tiny.conv.15 -> content/darknet/data_for_colab/darknet53.conv.74
 
 -예제 파일 사용 방법
-1. /content/darknet/data/helmetNonhelmet.jpg -> /content/darknet/data/image_detect_ex
-2. /content/darknet/data/2020-09-01_Untitled.mp4' -> /content/darknet/data/movie_detect_ex'
+1. /content/darknet/data/helmetNonhelmet.jpg -> /content/darknet/data/image_detect_ex.jpg
+2. /content/darknet/data/2020-09-01_Untitled.mp4' -> /content/darknet/data/movie_detect_ex.mpt
 
 
 
