@@ -3,6 +3,9 @@
 #### 윈도우 폴더 분류를 해야하기 때문에 윈도우 환경인 쥬피터에서 실행합니다.
 
 #### 예시 사진은 배달원 안전모 인증 사진으로 가정합니다.
+
+아래 코드 실행시 cv2 오류가 생긴다면 !pip install opencv-python 설치 후 다시 실행 부탁드립니다.
+
 ```c
 from time import sleep
 import cv2 as cv
